@@ -1,8 +1,7 @@
-from distutils.log import debug
 import joblib
-import numpy as np
 import pandas as pd
 import re
+from stop_words import get_stop_words
 
 from flask import Flask
 from flask_cors import CORS
@@ -23,6 +22,13 @@ class Predict(Resource):
         text = re.sub(r"(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)|^rt|http.+?", "", text)
         return text
 
+    def getReviewKeyWords(text):
+        stop_words = get_stop_words('en')
+        text = Predict.clean_text(text)
+        text = text.split()
+        text = [word for word in text if word not in stop_words]
+        return text
+
     @staticmethod
     def post():
         parser = reqparse.RequestParser()
@@ -33,7 +39,9 @@ class Predict(Resource):
         categories = ["Negative", "Positive"]
         result = int(model.predict(pd.Series(requestBody.review))[0])
 
-        out = {'Prediction': categories[result]}
+        keyWords = Predict.getReviewKeyWords(requestBody.review)
+        print("keyWords", str(keyWords))
+        out = {'Prediction': categories[result], "KeyWords": keyWords}
 
         return out, 200
 
@@ -41,4 +49,4 @@ class Predict(Resource):
 API.add_resource(Predict, '/predict')
 
 if __name__ == '__main__':
-    APP.run(port=5003, debug=True)
+    APP.run()
