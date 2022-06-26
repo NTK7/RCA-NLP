@@ -43,8 +43,11 @@ class Predict(Resource):
 
     def getReviewKeyWords(review):
         sentenses = review.split(".")
+        # remove items from the sentenses list that are empty such as ""
+        sentenses = [sentense for sentense in sentenses if sentense]
         sentenses = [sentense.lower() for sentense in sentenses]
         sentenses = [sentense.strip('\'"?,.') for sentense in sentenses]
+        sentenses = [sentense.strip() for sentense in sentenses]
 
         stop_words = get_stop_words('en')
         meaningful_words = [w for w in sentenses if not w in stop_words]
