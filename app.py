@@ -23,27 +23,8 @@ class Predict(Resource):
         text = re.sub(r"(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)|^rt|http.+?", "", text)
         return text
 
-    # def getReviewKeyWords(text):
-    #     words = text.split()
-    #     words = [word.lower() for word in words]
-    #     words = [word.strip('\'"?,.') for word in words]
-
-    #     stop_words = get_stop_words('en')
-    #     meaningful_words = [w for w in words if not w in stop_words]
-
-    #     categories = ["Negative", "Positive"]
-    #     review = int(model.predict(pd.Series(text))[0])
-    #     reviewKeyWordResult = []
-
-    #     for word in meaningful_words:
-    #         keywordReview = int(model.predict(pd.Series(word))[0])
-    #         reviewKeyWordResult.append({"keyword": word, "review": categories[keywordReview]})
-        
-    #     return {"prediction": categories[review], "keywords": reviewKeyWordResult}
-
     def getReviewKeyWords(review):
         sentenses = review.split(".")
-        # remove items from the sentenses list that are empty such as ""
         sentenses = [sentense for sentense in sentenses if sentense]
         sentenses = [sentense.lower() for sentense in sentenses]
         sentenses = [sentense.strip('\'"?,.') for sentense in sentenses]

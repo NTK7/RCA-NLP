@@ -1,9 +1,0 @@
-joblib
-requests
-Flask
-flask_cors
-flask_restful
-numpy
-sklearn
-gunicorn
-stop_words
