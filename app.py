@@ -16,12 +16,38 @@ API = Api(APP)
 
 model = joblib.load('model')
 
+food_related_keywords = ['food', 'soup', 'rice', 'noodles', 'pasta', 'dish', 'dishes', 'meal', 'meals', 'foods']
+service_related_keywords = ['service', 'waiter', 'waiters', 'waiter', 'waitress', 'waitresses', 'waiter', 'waitress']
+ambience_related_keywords = ['dark', 'bright', 'dull', 'sad', 'cosy', 'unpleasent', 'pleasent', 'environment', 'ambience']
+
 class Predict(Resource):
 
     def clean_text(text):
         text = text.lower()
         text = re.sub(r"(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)|^rt|http.+?", "", text)
         return text
+
+    def subReviewClassification(sentence):
+        stop_words = get_stop_words('en')
+        words = sentence.split()
+        words = [w for w in words if not w in stop_words]
+        words = [w.strip('\'"?,.') for w in words]
+        words = [w.strip() for w in words]
+
+        for word in words:
+            if word in food_related_keywords:
+                return "food"
+
+        for word in words:
+            if word in service_related_keywords:
+                return "service"
+
+        for word in words:
+            if word in ambience_related_keywords:
+                return "ambience"
+
+        return "other"
+    
 
     def getReviewKeyWords(review):
         sentenses = review.split(".")
@@ -39,7 +65,8 @@ class Predict(Resource):
 
         for sentense in meaningful_words:
             sentense_result = int(model.predict(pd.Series(sentense))[0])
-            reviewSentenseResult.append({"sentense": sentense, "review": categories[sentense_result]})
+            reviewType = Predict.subReviewClassification(sentense)
+            reviewSentenseResult.append({"sentense": sentense, "review": categories[sentense_result], "reviewType": reviewType})
 
         return {"prediction": categories[review_result], "sentenses": reviewSentenseResult}
 
@@ -54,8 +81,40 @@ class Predict(Resource):
 
         return out, 200
 
+class Search(Resource):
+
+    def findReviewsWithGivenKeyword(search):
+        dataframe = pd.read_csv('data_cleaned.csv')
+        dataframeReviews = dataframe['review_text']
+        dataframeReviews = dataframeReviews.tolist()
+
+        dataframeReviews = [review.lower() for review in dataframeReviews]
+        search = search.lower()
+        print(search)
+        
+        reviews = []
+
+        for review in dataframeReviews:
+            reviewCopy = review
+            stop_words = get_stop_words('en')
+            review = [w for w in review.split() if not w in stop_words]
+            review = [w.strip('\'"?,.') for w in review]
+            review = [w.strip() for w in review]
+
+            if search in review:
+                reviews.append(reviewCopy)
+    
+        return reviews
+
+        
+    def get(self, search):
+        reviews = Search.findReviewsWithGivenKeyword(search)
+        out = {'Reviews': reviews}
+        return out, 200
+
 
 API.add_resource(Predict, '/predict')
+API.add_resource(Search, '/review/<string:search>')
 
 if __name__ == '__main__':
     APP.run(debug=True)
