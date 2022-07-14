@@ -79,15 +79,26 @@ class Search(Resource):
             review = [w.strip() for w in review]
 
             if search in review:
-                reviews.append(reviewCopy)
-    
+                # reviews.append(reviewCopy)
+                sentenses = reviewCopy.split(".")
+                sentensesWithKeyword = []
+
+                for sentense in sentenses:
+                    if search in sentense:
+                        result = Predict.getReviewKeyWords(sentense)
+                        sentensesWithKeyword.append({ "sentense": sentense, "prediction": result['prediction'], "keys": result['sentenses']})
+
+                ketResults_ = []
+                for review_ in sentensesWithKeyword:
+                    ketResults_.append(review_['keys'])
+                reviews.append(ketResults_[0][0])
+
         return reviews
 
         
     def get(self, search):
         reviews = Search.findReviewsWithGivenKeyword(search)
-        out = {'Reviews': reviews}
-        return out, 200
+        return reviews, 200
 
 
 API.add_resource(Predict, '/predict')
