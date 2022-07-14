@@ -14,7 +14,8 @@ CORS(APP)
 API = Api(APP)
 
 
-model = joblib.load('model')
+model_label = joblib.load('model_label')
+model_type = joblib.load('model_type')
 
 food_related_keywords = ['food', 'soup', 'rice', 'noodles', 'pasta', 'dish', 'dishes', 'meal', 'meals', 'foods']
 service_related_keywords = ['service', 'waiter', 'waiters', 'waiter', 'waitress', 'waitresses', 'waiter', 'waitress']
@@ -60,13 +61,15 @@ class Predict(Resource):
         meaningful_words = [w for w in sentenses if not w in stop_words]
 
         categories = ["Negative", "Positive"]
-        review_result = int(model.predict(pd.Series(review))[0])
+        review_result = int(model_label.predict(pd.Series(review))[0])
         reviewSentenseResult = []
 
         for sentense in meaningful_words:
-            sentense_result = int(model.predict(pd.Series(sentense))[0])
-            reviewType = Predict.subReviewClassification(sentense)
-            reviewSentenseResult.append({"sentense": sentense, "review": categories[sentense_result], "reviewType": reviewType})
+            sentense_result = int(model_label.predict(pd.Series(sentense))[0])
+            reviewType = int(model_type.predict(pd.Series(sentense))[0]) - 1
+
+            reviewTypeList = ["Food", "Service", "Ambience", "Other"]
+            reviewSentenseResult.append({"sentense": sentense, "review": categories[sentense_result], "reviewType": reviewTypeList[reviewType]})
 
         return {"prediction": categories[review_result], "sentenses": reviewSentenseResult}
 
