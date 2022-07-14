@@ -17,38 +17,12 @@ API = Api(APP)
 model_label = joblib.load('model_label')
 model_type = joblib.load('model_type')
 
-food_related_keywords = ['food', 'soup', 'rice', 'noodles', 'pasta', 'dish', 'dishes', 'meal', 'meals', 'foods']
-service_related_keywords = ['service', 'waiter', 'waiters', 'waiter', 'waitress', 'waitresses', 'waiter', 'waitress']
-ambience_related_keywords = ['dark', 'bright', 'dull', 'sad', 'cosy', 'unpleasent', 'pleasent', 'environment', 'ambience']
-
 class Predict(Resource):
 
     def clean_text(text):
         text = text.lower()
         text = re.sub(r"(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)|^rt|http.+?", "", text)
         return text
-
-    def subReviewClassification(sentence):
-        stop_words = get_stop_words('en')
-        words = sentence.split()
-        words = [w for w in words if not w in stop_words]
-        words = [w.strip('\'"?,.') for w in words]
-        words = [w.strip() for w in words]
-
-        for word in words:
-            if word in food_related_keywords:
-                return "food"
-
-        for word in words:
-            if word in service_related_keywords:
-                return "service"
-
-        for word in words:
-            if word in ambience_related_keywords:
-                return "ambience"
-
-        return "other"
-    
 
     def getReviewKeyWords(review):
         sentenses = review.split(".")
