@@ -67,7 +67,6 @@ class Search(Resource):
 
         dataframeReviews = [review.lower() for review in dataframeReviews]
         search = search.lower()
-        print(search)
         
         reviews = []
 
@@ -95,9 +94,41 @@ class Search(Resource):
 
         return reviews
 
+    def findReviewsByPhrase(pharse):
+        dataframe = pd.read_csv('data_cleaned.csv')
+        reviewsDf = dataframe['review_text']
+        reviewList = reviewsDf.tolist()
+
+        reviewList = [review.lower() for review in reviewList]
+        pharse = pharse.lower()
+        pharse = pharse.strip()
+
+        reviewsFound = []
+
+        for review in reviewList:
+            reviewCopy = review
+            
+            if pharse in review:
+                print("Is present in the review")
+                sentences = reviewCopy.split(".")
+                sentencesWithPharse = []
+
+                for sentence in sentences:
+                    if pharse in sentence:
+                        print("Is present in sentence")
+                        result = Predict.getReviewKeyWords(sentence)
+                        sentencesWithPharse.append({ "sentense": sentence, "prediction": result['prediction'], "keys": result['sentenses']})
+
+                keyResults = []
+                for review_ in sentencesWithPharse:
+                    keyResults.append(review_['keys'])
+                reviewsFound.append(keyResults[0][0])
+
+        return reviewsFound
+
         
     def get(self, search):
-        reviews = Search.findReviewsWithGivenKeyword(search)
+        reviews = Search.findReviewsByPhrase(search)
         return reviews, 200
 
 
